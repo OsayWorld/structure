@@ -269,7 +269,15 @@ class UIBuilder:
         # Tree
         tree_container = ttk.Frame(tab_frame, padding=5)
         tree_container.grid(row=0, column=0, sticky=tk.NSEW, pady=(0, 5))
-        ttk.Label(tree_container, text="📁 Project Structure", style="Inverse.TLabel").pack(fill=tk.X, pady=(0, 5))
+        
+        tree_header = ttk.Frame(tree_container)
+        tree_header.pack(fill=tk.X, pady=(0, 5))
+        ttk.Label(tree_header, text="📁 Project Structure", style="Inverse.TLabel").pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
+        folder_controls = ttk.Frame(tree_header)
+        folder_controls.pack(side=tk.RIGHT)
+        ttk.Button(folder_controls, text="✓ All", command=self.select_all_folders, width=6, bootstyle="success-outline").pack(side=tk.LEFT, padx=2)
+        ttk.Button(folder_controls, text="✗ All", command=self.deselect_all_folders, width=6, bootstyle="danger-outline").pack(side=tk.LEFT, padx=2)
 
         tree = ttk.Treeview(tree_container, selectmode="browse", bootstyle=SECONDARY)
         tree.heading("#0", text="Files & Folders", anchor="w")
@@ -299,12 +307,14 @@ class UIBuilder:
         # Bindings
         tree.bind("<<TreeviewSelect>>", self.project_scanner.on_tree_select)
         tree.bind("<Button-3>", self.show_context_menu)
+        tree.bind("<Button-1>", self.on_tree_click)
         file_list.bind("<<TreeviewSelect>>", self.project_scanner.on_list_select)
         file_list.bind("<Button-3>", self.show_context_menu)
 
         tab_title = os.path.basename(project_path) or project_path
         self.workspace_notebook.add(tab_frame, text=f" {tab_title} ")
 
+# ... (rest of the code remains the same)
         self.workspace_tabs[project_path] = {"frame": tab_frame, "tree": tree, "file_list": file_list}
         self.select_workspace_tab(project_path)
 
@@ -440,6 +450,145 @@ class UIBuilder:
         self.app.bind("<Control-f>", lambda e: self.search_entry.focus() if self.search_entry else None)
         self.app.bind("<Control-g>", lambda e: self.code_editor_manager.go_to_line_dialog())
         self.app.bind("<Control-Alt-c>", lambda e: self.prompt_generator.copy_full_project_code())
+
+    # -----------------------------
+    # Folder Selection Controls
+    # -----------------------------
+    def on_tree_click(self, event):
+        """Handle tree click - toggle checkbox if clicking on a folder."""
+        if not self.tree:
+            return
+        
+        if not hasattr(self, 'project_scanner') or not self.project_scanner:
+            return
+        
+        try:
+            item_id = self.tree.identify_row(event.y)
+            if not item_id:
+                return
+            
+            values = self.tree.item(item_id, "values")
+            if not values or len(values) < 1:
+                return
+            
+            folder_path = values[0]
+            if not os.path.isdir(folder_path):
+                return
+            
+            is_included = self.project_scanner.toggle_folder_exclusion(folder_path)
+            self.update_folder_visual_state(item_id, folder_path, is_included)
+            
+            excluded_count = len(self.project_scanner.excluded_folders)
+            if excluded_count > 0:
+                self.app.set_status(f"Folder {'included' if is_included else 'excluded'}. {excluded_count} folder(s) excluded from full copy.")
+            else:
+                self.app.set_status("All folders included for full project copy.")
+                
+        except Exception as e:
+            print(f"Error handling tree click: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def update_folder_visual_state(self, item_id, folder_path, is_included):
+        """Update the visual state of a folder in the tree."""
+        if not self.tree:
+            return
+        
+        try:
+            current_text = self.tree.item(item_id, "text")
+            folder_name = current_text.strip()
+            
+            # Remove existing checkbox and folder icon
+            for marker in ["☑ 📁 ", "☐ 📁 ", "☑ ", "☐ ", "📁 "]:
+                if folder_name.startswith(marker):
+                    folder_name = folder_name[len(marker):]
+                    break
+            
+            # Add checkbox based on inclusion state
+            if is_included:
+                checkbox = "☑"
+                tags = ("included",)
+            else:
+                checkbox = "☐"
+                tags = ("excluded",)
+            
+            new_text = f"{checkbox} 📁 {folder_name}"
+            self.tree.item(item_id, text=new_text, tags=tags)
+            
+            # Configure tag colors
+            self.tree.tag_configure("excluded", foreground="#888888")
+            self.tree.tag_configure("included", foreground="")
+            
+        except Exception as e:
+            print(f"Error updating folder visual state: {e}")
+    
+    def select_all_folders(self):
+        """Include all folders for full project copy."""
+        if not hasattr(self, 'project_scanner') or not self.project_scanner:
+            return
+        
+        if not self.project_scanner.project_path:
+            return
+        
+        try:
+            self.project_scanner.clear_all_exclusions()
+            self.refresh_folder_visual_states()
+            self.app.set_status("All folders included for full project copy.")
+        except Exception as e:
+            print(f"Error selecting all folders: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def deselect_all_folders(self):
+        """Exclude all folders from full project copy."""
+        if not hasattr(self, 'project_scanner') or not self.project_scanner:
+            return
+        
+        if not self.project_scanner.project_path:
+            return
+        
+        try:
+            self.project_scanner.exclude_all_folders()
+            self.refresh_folder_visual_states()
+            excluded_count = len(self.project_scanner.excluded_folders)
+            self.app.set_status(f"{excluded_count} folder(s) excluded from full project copy.")
+        except Exception as e:
+            print(f"Error deselecting all folders: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def refresh_folder_visual_states(self):
+        """Refresh visual states of all folders in the tree."""
+        if not self.tree:
+            return
+        
+        if not hasattr(self, 'project_scanner') or not self.project_scanner:
+            return
+        
+        try:
+            def update_item(item_id):
+                try:
+                    values = self.tree.item(item_id, "values")
+                    if values and len(values) > 0:
+                        folder_path = values[0]
+                        if os.path.isdir(folder_path):
+                            is_included = not self.project_scanner.is_folder_excluded(folder_path)
+                            self.update_folder_visual_state(item_id, folder_path, is_included)
+                    
+                    # Recursively update children
+                    for child_id in self.tree.get_children(item_id):
+                        update_item(child_id)
+                except Exception as e:
+                    print(f"Error updating item {item_id}: {e}")
+            
+            # Start from root items
+            for root_item in self.tree.get_children():
+                update_item(root_item)
+                
+        except Exception as e:
+            print(f"Error refreshing folder visual states: {e}")
+            import traceback
+            traceback.print_exc()
 
     # -----------------------------
     # Context Menu

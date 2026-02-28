@@ -605,19 +605,26 @@ class PromptGenerator:
         """
         New feature: Copy the *entire* project code without truncation.
         Includes project structure and full content of all eligible files.
+        Respects folder exclusions set by the user.
         """
         if not hasattr(self.project_scanner, 'project_path') or not self.project_scanner.project_path:
             messagebox.showwarning("No Project", "Please load a project first to copy its code.", parent=self.app)
             return
 
-        all_files_paths = self.project_scanner.get_all_files()
-        total_content_size = sum(os.path.getsize(f) for f in all_files_paths if os.path.exists(f)) # Use paths to get size
+        # Get files respecting folder exclusions
+        all_files_paths = self.project_scanner.get_all_files(respect_exclusions=True)
+        total_content_size = sum(os.path.getsize(f) for f in all_files_paths if os.path.exists(f))
 
         if not all_files_paths:
-            messagebox.showinfo("No Files", "No eligible files found in the project to copy.", parent=self.app)
+            messagebox.showinfo("No Files", "No eligible files found in the project to copy (all folders may be excluded).", parent=self.app)
             return
 
+        # Show exclusion info if folders are excluded
+        excluded_count = len(self.project_scanner.excluded_folders)
         warning_message = ""
+        if excluded_count > 0:
+            warning_message += f"Note: {excluded_count} folder(s) are excluded and will not be copied.\n\n"
+        
         if total_content_size > self.FULL_COPY_SIZE_WARNING_THRESHOLD:
             warning_message += f"The total size of project files ({self.project_scanner.format_size(total_content_size)}) exceeds the recommended copy limit of {self.project_scanner.format_size(self.FULL_COPY_SIZE_WARNING_THRESHOLD)}.\n"
         if len(all_files_paths) > self.FULL_COPY_FILE_COUNT_WARNING_THRESHOLD:

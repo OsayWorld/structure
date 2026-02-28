@@ -56,9 +56,11 @@ class ProjectScanner:
             scanned_tree_data: list = field(default_factory=list)
             scanned_file_list_data: list = field(default_factory=list)
             loaded: bool = False
+            excluded_folders: set = field(default_factory=set)
 
         self._WorkspaceState = _WorkspaceState
         self._workspaces = {}
+        self.excluded_folders = set()
 
     def set_dependencies(self, code_editor_manager, prompt_generator):
         # Access ui_builder after its initialization in app_core
@@ -189,6 +191,7 @@ class ProjectScanner:
         self.total_size = ws.total_size
         self.scanned_tree_data = ws.scanned_tree_data
         self.scanned_file_list_data = ws.scanned_file_list_data
+        self.excluded_folders = ws.excluded_folders
 
         if self.ui_builder.project_label:
             self.ui_builder.project_label.config(text=f" {os.path.basename(project_path)}")
@@ -380,7 +383,10 @@ class ProjectScanner:
             root_id_placeholder_raw, root_name, root_path, is_dir_flag, depth = tree_nodes_raw_data[0] 
             
             # Treeview values for folders: [full_path]
-            root_node_id = self.ui_builder.tree.insert("", "end", text=f" {root_name}", 
+            # Add checkbox for root folder
+            is_excluded = root_path in self.excluded_folders
+            checkbox = "☐" if is_excluded else "☑"
+            root_node_id = self.ui_builder.tree.insert("", "end", text=f"{checkbox} 📁 {root_name}", 
                                            values=[root_path], open=True) # OPEN ROOT NODE BY DEFAULT
             id_map[root_id_placeholder_raw] = root_node_id
 
@@ -391,8 +397,11 @@ class ProjectScanner:
                 parent_node_id = id_map.get(parent_id_placeholder_raw, None)
                 if parent_node_id:
                     if is_dir_flag:
+                        # Add checkbox for folders
+                        is_excluded = full_path in self.excluded_folders
+                        checkbox = "☐" if is_excluded else "☑"
                         new_id_placeholder_raw = f"{parent_id_placeholder_raw}/{name}" # Reconstruct placeholder
-                        new_node_id = self.ui_builder.tree.insert(parent_node_id, "end", text=f" {name}", 
+                        new_node_id = self.ui_builder.tree.insert(parent_node_id, "end", text=f"{checkbox} 📁 {name}", 
                                                        values=[full_path], open=False)
                         id_map[new_id_placeholder_raw] = new_node_id
                     else: # It's a file
@@ -605,11 +614,67 @@ class ProjectScanner:
             self.app.set_status(f"Error getting folder files: {e}")
         return files
 
-    def get_all_files(self):
-        """Get all eligible project file paths from scanned data."""
-        if self.project_path:
-            return [item_data[3] for item_data in self.scanned_file_list_data] 
-        return []
+    def get_all_files(self, respect_exclusions=False):
+        """Get all eligible project file paths from scanned data.
+        
+        Args:
+            respect_exclusions: If True, exclude files in excluded folders
+        """
+        if not self.project_path:
+            return []
+        
+        all_files = [item_data[3] for item_data in self.scanned_file_list_data]
+        
+        if not respect_exclusions or not self.excluded_folders:
+            return all_files
+        
+        # Filter out files in excluded folders
+        filtered_files = []
+        for file_path in all_files:
+            is_excluded = False
+            for excluded_folder in self.excluded_folders:
+                if file_path.startswith(excluded_folder + os.sep) or file_path == excluded_folder:
+                    is_excluded = True
+                    break
+            if not is_excluded:
+                filtered_files.append(file_path)
+        
+        return filtered_files
+    
+    def toggle_folder_exclusion(self, folder_path):
+        """Toggle folder exclusion for full project copy."""
+        folder_path = os.path.abspath(folder_path)
+        if folder_path in self.excluded_folders:
+            self.excluded_folders.remove(folder_path)
+        else:
+            self.excluded_folders.add(folder_path)
+        
+        # Update workspace state
+        if self.project_path in self._workspaces:
+            self._workspaces[self.project_path].excluded_folders = self.excluded_folders
+        
+        return folder_path not in self.excluded_folders
+    
+    def is_folder_excluded(self, folder_path):
+        """Check if a folder is excluded."""
+        folder_path = os.path.abspath(folder_path)
+        return folder_path in self.excluded_folders
+    
+    def clear_all_exclusions(self):
+        """Clear all folder exclusions."""
+        self.excluded_folders.clear()
+        if self.project_path in self._workspaces:
+            self._workspaces[self.project_path].excluded_folders = self.excluded_folders
+    
+    def exclude_all_folders(self):
+        """Exclude all folders in the project."""
+        for item_data in self.scanned_tree_data:
+            parent_id_placeholder, name, full_path, is_dir_flag, depth = item_data
+            if is_dir_flag and os.path.isdir(full_path):
+                self.excluded_folders.add(os.path.abspath(full_path))
+        
+        if self.project_path in self._workspaces:
+            self._workspaces[self.project_path].excluded_folders = self.excluded_folders
 
     def reload_project(self):
         """Reload current project."""

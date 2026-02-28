@@ -611,19 +611,20 @@ class PromptGenerator:
             messagebox.showwarning("No Project", "Please load a project first to copy its code.", parent=self.app)
             return
 
-        # Get files respecting folder exclusions
+        # Get files respecting folder and file exclusions
         all_files_paths = self.project_scanner.get_all_files(respect_exclusions=True)
         total_content_size = sum(os.path.getsize(f) for f in all_files_paths if os.path.exists(f))
 
         if not all_files_paths:
-            messagebox.showinfo("No Files", "No eligible files found in the project to copy (all folders may be excluded).", parent=self.app)
+            messagebox.showinfo("No Files", "No eligible files found in the project to copy (all items may be excluded).", parent=self.app)
             return
 
-        # Show exclusion info if folders are excluded
-        excluded_count = len(self.project_scanner.excluded_folders)
+        # Show exclusion info if folders or files are excluded
+        excluded_folder_count = len(self.project_scanner.excluded_folders)
+        excluded_file_count = len(self.project_scanner.excluded_files)
         warning_message = ""
-        if excluded_count > 0:
-            warning_message += f"Note: {excluded_count} folder(s) are excluded and will not be copied.\n\n"
+        if excluded_folder_count > 0 or excluded_file_count > 0:
+            warning_message += f"Note: {excluded_folder_count} folder(s) and {excluded_file_count} file(s) are excluded and will not be copied.\n\n"
         
         if total_content_size > self.FULL_COPY_SIZE_WARNING_THRESHOLD:
             warning_message += f"The total size of project files ({self.project_scanner.format_size(total_content_size)}) exceeds the recommended copy limit of {self.project_scanner.format_size(self.FULL_COPY_SIZE_WARNING_THRESHOLD)}.\n"

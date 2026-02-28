@@ -455,7 +455,7 @@ class UIBuilder:
     # Folder Selection Controls
     # -----------------------------
     def on_tree_click(self, event):
-        """Handle tree click - toggle checkbox if clicking on a folder."""
+        """Handle tree click - toggle checkbox for both files and folders."""
         if not self.tree:
             return
         
@@ -471,23 +471,62 @@ class UIBuilder:
             if not values or len(values) < 1:
                 return
             
-            folder_path = values[0]
-            if not os.path.isdir(folder_path):
-                return
+            path = values[0]
             
-            is_included = self.project_scanner.toggle_folder_exclusion(folder_path)
-            self.update_folder_visual_state(item_id, folder_path, is_included)
-            
-            excluded_count = len(self.project_scanner.excluded_folders)
-            if excluded_count > 0:
-                self.app.set_status(f"Folder {'included' if is_included else 'excluded'}. {excluded_count} folder(s) excluded from full copy.")
-            else:
-                self.app.set_status("All folders included for full project copy.")
+            if os.path.isdir(path):
+                # Handle folder
+                is_included = self.project_scanner.toggle_folder_exclusion(path)
+                self.update_folder_visual_state(item_id, path, is_included)
+                
+                # Recursively update all child items (files and subfolders)
+                self._update_children_visual_state(item_id)
+                
+                excluded_count = len(self.project_scanner.excluded_folders)
+                if excluded_count > 0:
+                    self.app.set_status(f"Folder {'included' if is_included else 'excluded'}. {excluded_count} folder(s) excluded from full copy.")
+                else:
+                    self.app.set_status("All folders included for full project copy.")
+            elif os.path.isfile(path):
+                # Handle file
+                is_included = self.project_scanner.toggle_file_exclusion(path)
+                self.update_file_visual_state(item_id, path, is_included)
+                
+                excluded_file_count = len(self.project_scanner.excluded_files)
+                excluded_folder_count = len(self.project_scanner.excluded_folders)
+                total_excluded = excluded_file_count + excluded_folder_count
+                if total_excluded > 0:
+                    self.app.set_status(f"File {'included' if is_included else 'excluded'}. {excluded_file_count} file(s) and {excluded_folder_count} folder(s) excluded.")
+                else:
+                    self.app.set_status("All items included for full project copy.")
                 
         except Exception as e:
             print(f"Error handling tree click: {e}")
             import traceback
             traceback.print_exc()
+    
+    def _update_children_visual_state(self, parent_item_id):
+        """Recursively update visual state of all children under a parent item."""
+        if not self.tree:
+            return
+        
+        try:
+            for child_id in self.tree.get_children(parent_item_id):
+                values = self.tree.item(child_id, "values")
+                if values and len(values) > 0:
+                    child_path = values[0]
+                    
+                    if os.path.isdir(child_path):
+                        # Update subfolder
+                        is_included = not self.project_scanner.is_folder_excluded(child_path)
+                        self.update_folder_visual_state(child_id, child_path, is_included)
+                        # Recursively update its children
+                        self._update_children_visual_state(child_id)
+                    elif os.path.isfile(child_path):
+                        # Update file
+                        is_included = not self.project_scanner.is_file_excluded(child_path)
+                        self.update_file_visual_state(child_id, child_path, is_included)
+        except Exception as e:
+            print(f"Error updating children visual state: {e}")
     
     def update_folder_visual_state(self, item_id, folder_path, is_included):
         """Update the visual state of a folder in the tree."""
@@ -522,8 +561,39 @@ class UIBuilder:
         except Exception as e:
             print(f"Error updating folder visual state: {e}")
     
+    def update_file_visual_state(self, item_id, file_path, is_included):
+        """Update the visual state of a file in the tree."""
+        if not self.tree:
+            return
+        
+        try:
+            current_text = self.tree.item(item_id, "text")
+            file_display = current_text.strip()
+            
+            # Remove existing checkbox (keep file icon)
+            if file_display.startswith("☑ ") or file_display.startswith("☐ "):
+                file_display = file_display[2:]  # Remove checkbox and space
+            
+            # Add checkbox based on inclusion state
+            if is_included:
+                checkbox = "☑"
+                tags = ("included",)
+            else:
+                checkbox = "☐"
+                tags = ("excluded",)
+            
+            new_text = f"{checkbox} {file_display}"
+            self.tree.item(item_id, text=new_text, tags=tags)
+            
+            # Configure tag colors
+            self.tree.tag_configure("excluded", foreground="#888888")
+            self.tree.tag_configure("included", foreground="")
+            
+        except Exception as e:
+            print(f"Error updating file visual state: {e}")
+    
     def select_all_folders(self):
-        """Include all folders for full project copy."""
+        """Include all folders and files for full project copy."""
         if not hasattr(self, 'project_scanner') or not self.project_scanner:
             return
         
@@ -532,15 +602,16 @@ class UIBuilder:
         
         try:
             self.project_scanner.clear_all_exclusions()
+            self.project_scanner.clear_all_file_exclusions()
             self.refresh_folder_visual_states()
-            self.app.set_status("All folders included for full project copy.")
+            self.app.set_status("All folders and files included for full project copy.")
         except Exception as e:
-            print(f"Error selecting all folders: {e}")
+            print(f"Error selecting all items: {e}")
             import traceback
             traceback.print_exc()
     
     def deselect_all_folders(self):
-        """Exclude all folders from full project copy."""
+        """Exclude all folders and files from full project copy."""
         if not hasattr(self, 'project_scanner') or not self.project_scanner:
             return
         
@@ -549,16 +620,18 @@ class UIBuilder:
         
         try:
             self.project_scanner.exclude_all_folders()
+            self.project_scanner.exclude_all_files()
+            excluded_folder_count = len(self.project_scanner.excluded_folders)
+            excluded_file_count = len(self.project_scanner.excluded_files)
             self.refresh_folder_visual_states()
-            excluded_count = len(self.project_scanner.excluded_folders)
-            self.app.set_status(f"{excluded_count} folder(s) excluded from full project copy.")
+            self.app.set_status(f"{excluded_folder_count} folder(s) and {excluded_file_count} file(s) excluded from full project copy.")
         except Exception as e:
-            print(f"Error deselecting all folders: {e}")
+            print(f"Error deselecting all items: {e}")
             import traceback
             traceback.print_exc()
     
     def refresh_folder_visual_states(self):
-        """Refresh visual states of all folders in the tree."""
+        """Refresh visual states of all folders and files in the tree."""
         if not self.tree:
             return
         
@@ -570,10 +643,13 @@ class UIBuilder:
                 try:
                     values = self.tree.item(item_id, "values")
                     if values and len(values) > 0:
-                        folder_path = values[0]
-                        if os.path.isdir(folder_path):
-                            is_included = not self.project_scanner.is_folder_excluded(folder_path)
-                            self.update_folder_visual_state(item_id, folder_path, is_included)
+                        path = values[0]
+                        if os.path.isdir(path):
+                            is_included = not self.project_scanner.is_folder_excluded(path)
+                            self.update_folder_visual_state(item_id, path, is_included)
+                        elif os.path.isfile(path):
+                            is_included = not self.project_scanner.is_file_excluded(path)
+                            self.update_file_visual_state(item_id, path, is_included)
                     
                     # Recursively update children
                     for child_id in self.tree.get_children(item_id):
@@ -586,7 +662,7 @@ class UIBuilder:
                 update_item(root_item)
                 
         except Exception as e:
-            print(f"Error refreshing folder visual states: {e}")
+            print(f"Error refreshing visual states: {e}")
             import traceback
             traceback.print_exc()
 

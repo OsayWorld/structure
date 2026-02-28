@@ -11,3 +11,118 @@ KeyboardInterrupt
 2026-02-28 12:01:52 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
 2026-02-28 12:23:03 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
 2026-02-28 12:26:07 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 12:34:28 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 12:34:53 ERROR [MainThread] project_scanner: Failed to add workspace tab during init for C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure
+Traceback (most recent call last):
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 89, in initialize_project
+    self.ui_builder.add_workspace_tab(p)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 319, in add_workspace_tab
+    self.select_workspace_tab(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 353, in select_workspace_tab
+    self._set_active_widgets_for_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 382, in _set_active_widgets_for_workspace
+    self.project_scanner.set_active_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    self.excluded_files = ws.excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:34:53 ERROR [MainThread] project_scanner: Error initializing project
+Traceback (most recent call last):
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 96, in initialize_project
+    self.set_active_workspace(active)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    self.excluded_files = ws.excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:34:56 ERROR [MainThread] app_core: Tkinter callback exception
+Traceback (most recent call last):
+  File "C:\Users\OsayWorld\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1968, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 368, in _on_workspace_tab_changed
+    self._set_active_widgets_for_workspace(path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 382, in _set_active_widgets_for_workspace
+    self.project_scanner.set_active_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    self.excluded_files = ws.excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:35:36 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 12:35:44 ERROR [MainThread] project_scanner: Failed to add workspace tab during init for C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure
+Traceback (most recent call last):
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 89, in initialize_project
+    self.ui_builder.add_workspace_tab(p)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 319, in add_workspace_tab
+    self.select_workspace_tab(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 353, in select_workspace_tab
+    self._set_active_widgets_for_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 382, in _set_active_widgets_for_workspace
+    self.project_scanner.set_active_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    self.excluded_files = ws.excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:35:44 ERROR [MainThread] project_scanner: Error initializing project
+Traceback (most recent call last):
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 96, in initialize_project
+    self.set_active_workspace(active)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    self.excluded_files = ws.excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:35:46 ERROR [MainThread] app_core: Tkinter callback exception
+Traceback (most recent call last):
+  File "C:\Users\OsayWorld\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1968, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 368, in _on_workspace_tab_changed
+    self._set_active_widgets_for_workspace(path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 382, in _set_active_widgets_for_workspace
+    self.project_scanner.set_active_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    self.excluded_files = ws.excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:40:42 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 12:41:27 ERROR [MainThread] project_scanner: Failed to add workspace tab during init for C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure
+Traceback (most recent call last):
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 89, in initialize_project
+    self.ui_builder.add_workspace_tab(p)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 319, in add_workspace_tab
+    self.select_workspace_tab(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 353, in select_workspace_tab
+    self._set_active_widgets_for_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 382, in _set_active_widgets_for_workspace
+    self.project_scanner.set_active_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    # Handle backward compatibility for workspaces without excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:41:27 ERROR [MainThread] project_scanner: Error initializing project
+Traceback (most recent call last):
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 96, in initialize_project
+    self.set_active_workspace(active)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    # Handle backward compatibility for workspaces without excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:41:30 ERROR [MainThread] app_core: Tkinter callback exception
+Traceback (most recent call last):
+  File "C:\Users\OsayWorld\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1968, in __call__
+    return self.func(*args)
+           ^^^^^^^^^^^^^^^^
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 368, in _on_workspace_tab_changed
+    self._set_active_widgets_for_workspace(path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\ui_builder.py", line 382, in _set_active_widgets_for_workspace
+    self.project_scanner.set_active_workspace(project_path)
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\project_scanner.py", line 195, in set_active_workspace
+    # Handle backward compatibility for workspaces without excluded_files
+                          ^^^^^^^^^^^^^^^^^
+AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did you mean: 'excluded_folders'?
+2026-02-28 12:45:59 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 12:52:10 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 12:54:40 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 12:58:52 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 13:01:57 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 13:03:52 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 13:11:34 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log

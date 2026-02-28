@@ -192,6 +192,8 @@ class ProjectScanner:
         self.scanned_tree_data = ws.scanned_tree_data
         self.scanned_file_list_data = ws.scanned_file_list_data
         self.excluded_folders = ws.excluded_folders
+        # Handle backward compatibility for workspaces without excluded_files
+        self.excluded_files = getattr(ws, 'excluded_files', set())
 
         if self.ui_builder.project_label:
             self.ui_builder.project_label.config(text=f" {os.path.basename(project_path)}")
@@ -405,9 +407,12 @@ class ProjectScanner:
                                                        values=[full_path], open=False)
                         id_map[new_id_placeholder_raw] = new_node_id
                     else: # It's a file
+                        # Add checkbox for files
+                        is_excluded = full_path in self.excluded_files
+                        checkbox = "☐" if is_excluded else "☑"
                         icon = self.get_file_icon(name)
                         # File values: [full_path]
-                        self.ui_builder.tree.insert(parent_node_id, "end", text=f"{icon} {name}", 
+                        self.ui_builder.tree.insert(parent_node_id, "end", text=f"{checkbox} {icon} {name}", 
                                          values=[full_path])
         
         # For file_list, each item_data is (icon_rel_path, size_str, ext_upper, full_path)
@@ -618,42 +623,65 @@ class ProjectScanner:
         """Get all eligible project file paths from scanned data.
         
         Args:
-            respect_exclusions: If True, exclude files in excluded folders
+            respect_exclusions: If True, exclude files in excluded folders and individually excluded files
         """
         if not self.project_path:
             return []
         
         all_files = [item_data[3] for item_data in self.scanned_file_list_data]
         
-        if not respect_exclusions or not self.excluded_folders:
+        if not respect_exclusions:
             return all_files
         
-        # Filter out files in excluded folders
+        # Filter out files in excluded folders and individually excluded files
         filtered_files = []
         for file_path in all_files:
-            is_excluded = False
+            # Check if file is individually excluded
+            if file_path in self.excluded_files:
+                continue
+            
+            # Check if file is in an excluded folder
+            is_in_excluded_folder = False
             for excluded_folder in self.excluded_folders:
                 if file_path.startswith(excluded_folder + os.sep) or file_path == excluded_folder:
-                    is_excluded = True
+                    is_in_excluded_folder = True
                     break
-            if not is_excluded:
+            
+            if not is_in_excluded_folder:
                 filtered_files.append(file_path)
         
         return filtered_files
     
     def toggle_folder_exclusion(self, folder_path):
-        """Toggle folder exclusion for full project copy."""
+        """Toggle folder exclusion for full project copy and cascade to child files."""
         folder_path = os.path.abspath(folder_path)
-        if folder_path in self.excluded_folders:
+        is_now_included = folder_path in self.excluded_folders
+        
+        if is_now_included:
+            # Including the folder - remove from exclusions
             self.excluded_folders.remove(folder_path)
+            # Also include all files within this folder
+            files_to_include = []
+            for file_path in self.excluded_files:
+                if file_path.startswith(folder_path + os.sep):
+                    files_to_include.append(file_path)
+            for file_path in files_to_include:
+                self.excluded_files.discard(file_path)
         else:
+            # Excluding the folder - add to exclusions
             self.excluded_folders.add(folder_path)
+            # Also exclude all files within this folder
+            for item_data in self.scanned_file_list_data:
+                file_path = item_data[3]
+                if file_path.startswith(folder_path + os.sep):
+                    self.excluded_files.add(os.path.abspath(file_path))
         
         # Update workspace state
         if self.project_path in self._workspaces:
             self._workspaces[self.project_path].excluded_folders = self.excluded_folders
+            self._workspaces[self.project_path].excluded_files = self.excluded_files
         
-        return folder_path not in self.excluded_folders
+        return is_now_included
     
     def is_folder_excluded(self, folder_path):
         """Check if a folder is excluded."""
@@ -675,6 +703,41 @@ class ProjectScanner:
         
         if self.project_path in self._workspaces:
             self._workspaces[self.project_path].excluded_folders = self.excluded_folders
+    
+    def toggle_file_exclusion(self, file_path):
+        """Toggle file exclusion for full project copy."""
+        file_path = os.path.abspath(file_path)
+        if file_path in self.excluded_files:
+            self.excluded_files.remove(file_path)
+        else:
+            self.excluded_files.add(file_path)
+        
+        # Update workspace state
+        if self.project_path in self._workspaces:
+            self._workspaces[self.project_path].excluded_files = self.excluded_files
+        
+        return file_path not in self.excluded_files
+    
+    def is_file_excluded(self, file_path):
+        """Check if a file is excluded."""
+        file_path = os.path.abspath(file_path)
+        return file_path in self.excluded_files
+    
+    def clear_all_file_exclusions(self):
+        """Clear all file exclusions."""
+        self.excluded_files.clear()
+        if self.project_path in self._workspaces:
+            self._workspaces[self.project_path].excluded_files = self.excluded_files
+    
+    def exclude_all_files(self):
+        """Exclude all files in the project."""
+        for item_data in self.scanned_file_list_data:
+            full_path = item_data[3]
+            if os.path.isfile(full_path):
+                self.excluded_files.add(os.path.abspath(full_path))
+        
+        if self.project_path in self._workspaces:
+            self._workspaces[self.project_path].excluded_files = self.excluded_files
 
     def reload_project(self):
         """Reload current project."""

@@ -1,0 +1,10 @@
+2026-02-28 02:19:35 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 02:22:10 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 02:27:58 ERROR [MainThread] __main__: Uncaught exception
+Traceback (most recent call last):
+  File "C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\main.py", line 59, in <module>
+    app.mainloop()
+  File "C:\Users\OsayWorld\AppData\Local\Programs\Python\Python312\Lib\tkinter\__init__.py", line 1505, in mainloop
+    self.tk.mainloop(n)
+KeyboardInterrupt
+2026-02-28 02:30:42 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log

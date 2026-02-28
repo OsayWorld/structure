@@ -1,0 +1,50 @@
+{
+  "last_project_path": "C:\\OSAYWORLD\\PYTHON APPS\\blog_scraper\\structure",
+  "workspace_paths": [
+    "C:\\OSAYWORLD\\PYTHON APPS\\blog_scraper\\structure",
+    "C:\\OSAYWORLD\\PYTHON APPS\\blog_scraper\\builder"
+  ],
+  "active_workspace_path": "C:\\OSAYWORLD\\PYTHON APPS\\blog_scraper\\structure",
+  "theme": "darkly",
+  "font_size": 11,
+  "max_prompt_file_length": 10000,
+  "excluded_patterns": [
+    ".idea",
+    "venv",
+    "env",
+    "dist",
+    "node_modules",
+    ".git",
+    ".vscode",
+    ".next",
+    "__pycache__",
+    "build"
+  ],
+  "included_extensions": [
+    ".tsx",
+    ".cpp",
+    ".py",
+    ".yml",
+    ".java",
+    ".rs",
+    ".env",
+    ".css",
+    ".jsx",
+    ".go",
+    ".c",
+    ".swift",
+    ".html",
+    ".h",
+    ".php",
+    ".json",
+    ".xml",
+    ".vue",
+    ".js",
+    ".txt",
+    ".rb",
+    ".sql",
+    ".md",
+    ".yaml",
+    ".ts"
+  ]
+}

@@ -126,3 +126,5 @@ AttributeError: '_WorkspaceState' object has no attribute 'excluded_files'. Did 
 2026-02-28 13:01:57 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
 2026-02-28 13:03:52 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
 2026-02-28 13:11:34 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 13:41:45 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
+2026-02-28 13:42:07 INFO [MainThread] __main__: Logging initialized. log_file=C:\OSAYWORLD\PYTHON APPS\blog_scraper\structure\app.log
